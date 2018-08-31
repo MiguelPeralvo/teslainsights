@@ -3,11 +3,8 @@ import matplotlib
 
 matplotlib.use('TkAgg')
 from fastai.text import *
-from message_utils import *
-
-import argparse
+from .message_utils import *
 import sys
-
 sys.excepthook = sys.__excepthook__  # See https://groups.io/g/insync/topic/13778827?p=,,,20,0,0,0::recentpostdate%2Fsticky,,,20,2,0,13778827
 import json
 
@@ -76,8 +73,7 @@ def softmax(x):
     exp_x = np.exp(x - max_x)
     return exp_x / np.sum(exp_x, axis=1).reshape((-1, 1))
 
-
-def predict_text(stoi, model, text):
+def predict_text_sentiment(stoi, model, text):
     """Do the actual prediction on the text using the
         model and mapping files passed
     """
@@ -115,58 +111,23 @@ def predict_text(stoi, model, text):
 
     return softmax(numpy_preds[0])[0]
 
-
-def predict_input(
-        itos_file_path, trained_classifier_file_path, input_data_file_path, batch_size, sleep_ms,
+def predict_json_record(
+        json_record, stoi, model,
+        itos_file_path, trained_classifier_file_path, input_data_file_path
 ):
-    # Check the itos file exists
-    if not os.path.exists(itos_file_path):
-        logger.error(f'Could not find {itos_file_path}')
-        exit(-1)
+    text = json_record['data']['text']
+    scores = predict_text_sentiment(stoi, model, text)
+    delta_ts = datetime.utcnow() - datetime(1970, 1, 1)
+    prediction_processed_ts_ms = int((delta_ts.days * 24 * 60 * 60 + delta_ts.seconds) * 1000 + delta_ts.microseconds / 1000.0)
 
-    # Check the classifier file exists
-    if not os.path.exists(trained_classifier_file_path):
-        logger.error(f'Could not find {trained_classifier_file_path}')
-        exit(-1)
+    json_record['predictions'] = {
+        'model': trained_classifier_file_path,
+        'context': [{'stoi': itos_file_path, 'inputDataset': input_data_file_path}],
+        'predictionProcessedTsMs': prediction_processed_ts_ms,
+        'values': {
+            'bear_sentiment': float(scores[0]),
+            'bull_sentiment': float(scores[1]),
+        }
+    }
 
-    stoi, model = load_model(itos_file_path, trained_classifier_file_path)
-
-    if input_data_file_path:
-        input_handle = open(input_data_file_path, 'r')
-    else:
-        input_handle = sys.stdin
-
-    for input_msgs in read_json_input(batch_size, input_handle, sleep_ms):
-        # print(input_msgs)
-        for json_line in input_msgs:
-            text = json_line['data']['text']
-            scores = predict_text(stoi, model, text)
-            # classes = ["bear_sentiment", "bull_sentiment"]
-            json_line['predictions'] = {
-                'bear_sentiment': float(scores[0]),
-                'bull_sentiment': float(scores[1]),
-            }
-
-            # print(f'Result: {classes[np.argmax(scores)]}, Scores: {scores}')
-            print(json.dumps(json_line))
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-if', '--itos_file_path', help='Path for the data file. If not specified, we\'ll read the data from stdin', type=str, required=True)
-    parser.add_argument('-tcf', '--trained_classifier_file_path', help='Path for the data file. If not specified, we\'ll read the data from stdin', type=str,
-                        required=True)
-    parser.add_argument('-bs', '--batch_size', help='Number of records per read.', type=int, default=1)
-    parser.add_argument('-idf', '--input_data_file_path', help='Path for the data file. If not specified, we\'ll read the data from stdin', type=str,
-                        required=False)
-    parser.add_argument('-s', '--sleep_ms', help='Sleep in millisecs', type=int, default=1000)
-
-    args = parser.parse_args()
-    itos_file_path = args.itos_file_path
-    trained_classifier_file_path = args.trained_classifier_file_path
-    input_data_file_path = args.input_data_file_path
-    batch_size = int(args.batch_size)
-    sleep_ms = int(args.sleep_ms)
-
-    predict_input(itos_file_path, trained_classifier_file_path, input_data_file_path, batch_size, sleep_ms)
+    return json.dumps(json_record)
