@@ -130,4 +130,4 @@ def predict_json_record(
         }
     }
 
-    return json.dumps(json_record)
+    return json_record

@@ -58,4 +58,4 @@ if __name__ == '__main__':
     sleep_ms = int(args.sleep_ms)
 
     for json_line in predict_input(itos_file_path, trained_classifier_file_path, input_data_file_path, batch_size, sleep_ms):
-        print(json_line)
+        print(json.dumps(json_line))
