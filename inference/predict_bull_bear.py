@@ -141,16 +141,14 @@ def predict_input(
         for json_line in input_msgs:
             text = json_line['data']['text']
             scores = predict_text(stoi, model, text)
-            classes = ["Bear", "Bull"]
-            print("Result: {0}, Scores: {1}".format(classes[np.argmax(scores)], scores))
+            # classes = ["bear_sentiment", "bull_sentiment"]
+            json_line['predictions'] = {
+                'bear_sentiment': float(scores[0]),
+                'bull_sentiment': float(scores[1]),
+            }
 
-
-
-        # while True:
-        #     text = input("")
-        #     scores = predict_text(stoi, model, text)
-        #     classes = ["Bear", "Bull"]
-        #     print("Result: {0}, Scores: {1}".format(classes[np.argmax(scores)], scores))
+            # print(f'Result: {classes[np.argmax(scores)]}, Scores: {scores}')
+            print(json.dumps(json_line))
 
 
 if __name__ == '__main__':
