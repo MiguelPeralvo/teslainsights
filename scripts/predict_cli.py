@@ -1,8 +1,12 @@
 import matplotlib
 matplotlib.use('TkAgg')
-from inference.sentiment_inference import *
+from inference import sentiment_inference
+from inference import message_utils
 import argparse
+import json
+
 import sys
+import os
 sys.excepthook = sys.__excepthook__  # See https://groups.io/g/insync/topic/13778827?p=,,,20,0,0,0::recentpostdate%2Fsticky,,,20,2,0,13778827
 
 import traceback
@@ -26,17 +30,20 @@ def predict_input(
         logger.error(f'Could not find {trained_classifier_file_path}')
         exit(-1)
 
-    stoi, model = load_model(itos_file_path, trained_classifier_file_path)
+    stoi, model = sentiment_inference.load_model(itos_file_path, trained_classifier_file_path)
 
     if input_data_file_path:
         input_handle = open(input_data_file_path, 'r')
     else:
         input_handle = sys.stdin
 
-    for input_msgs in read_json_input(batch_size, input_handle, sleep_ms):
+    for input_msgs in message_utils.read_json_input(batch_size, input_handle, sleep_ms):
         # print(input_msgs)
         for json_record in input_msgs:
-            yield(predict_json_record(json_record, stoi, model, itos_file_path, trained_classifier_file_path, input_data_file_path))
+            yield(sentiment_inference.predict_json_record(
+                json_record, stoi, model, itos_file_path,
+                trained_classifier_file_path, input_data_file_path)
+            )
 
 
 if __name__ == '__main__':

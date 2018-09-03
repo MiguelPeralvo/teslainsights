@@ -1,9 +1,8 @@
 import numpy as np
 import matplotlib
-
+import datetime
 matplotlib.use('TkAgg')
 from fastai.text import *
-from .message_utils import *
 import sys
 sys.excepthook = sys.__excepthook__  # See https://groups.io/g/insync/topic/13778827?p=,,,20,0,0,0::recentpostdate%2Fsticky,,,20,2,0,13778827
 import json
@@ -117,7 +116,7 @@ def predict_json_record(
 ):
     text = json_record['data']['text']
     scores = predict_text_sentiment(stoi, model, text)
-    delta_ts = datetime.utcnow() - datetime(1970, 1, 1)
+    delta_ts = datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)
     prediction_processed_ts_ms = int((delta_ts.days * 24 * 60 * 60 + delta_ts.seconds) * 1000 + delta_ts.microseconds / 1000.0)
 
     json_record['predictions'] = {
