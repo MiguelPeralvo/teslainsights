@@ -6,6 +6,7 @@ from fastai.text import *
 import sys
 sys.excepthook = sys.__excepthook__  # See https://groups.io/g/insync/topic/13778827?p=,,,20,0,0,0::recentpostdate%2Fsticky,,,20,2,0,13778827
 import json
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 import traceback
 import logging
@@ -13,6 +14,8 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+def load_vader_analyzer():
+    return SentimentIntensityAnalyzer()
 
 def load_model(itos_filename, classifier_filename):
     """Load the classifier and int to string mapping
@@ -110,12 +113,28 @@ def predict_text_sentiment(stoi, model, text):
 
     return softmax(numpy_preds[0])[0]
 
+def predict_text_sentiment_vader_normalized(vader_analyzer, text):
+    # [-1.0, 1.0]
+    vs = vader_analyzer.polarity_scores(text)['compound']
+
+    # [-1.0, 1.0] -> [0. 1.0]
+    return (vs+1)/2
+
+
+def calculate_mixed_sentiment(model_scores, vader_score):
+    #Avg for the time being.
+    return (model_scores[1] + vader_score)/2
+
+
 def predict_json_record(
-        json_record, stoi, model,
+        json_record, stoi, model, vader_analyzer,
         itos_file_path, trained_classifier_file_path, input_data_file_path
 ):
     text = json_record['data']['text']
+
+    # Softmax: model_scores[1] (bull) + model_scores[0] (bear) = 1.0
     scores = predict_text_sentiment(stoi, model, text)
+    vader_score = predict_text_sentiment_vader_normalized(vader_analyzer, text)
     delta_ts = datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)
     prediction_processed_ts_ms = int((delta_ts.days * 24 * 60 * 60 + delta_ts.seconds) * 1000 + delta_ts.microseconds / 1000.0)
 
@@ -126,6 +145,8 @@ def predict_json_record(
         'values': {
             'bear_sentiment': float(scores[0]),
             'bull_sentiment': float(scores[1]),
+            'vader_sentiment': float(vader_score),
+            'mixed_sentiment': calculate_mixed_sentiment(scores, vader_score)
         }
     }
 

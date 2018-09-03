@@ -31,6 +31,8 @@ def predict_input(
         exit(-1)
 
     stoi, model = sentiment_inference.load_model(itos_file_path, trained_classifier_file_path)
+    vader_analyzer = sentiment_inference.load_vader_analyzer()
+
 
     if input_data_file_path:
         input_handle = open(input_data_file_path, 'r')
@@ -41,7 +43,7 @@ def predict_input(
         # print(input_msgs)
         for json_record in input_msgs:
             yield(sentiment_inference.predict_json_record(
-                json_record, stoi, model, itos_file_path,
+                json_record, stoi, model, vader_analyzer, itos_file_path,
                 trained_classifier_file_path, input_data_file_path)
             )
 
