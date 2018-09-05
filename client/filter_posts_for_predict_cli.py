@@ -78,13 +78,18 @@ if __name__ == '__main__':
             # Now we'll check in the db if we already processed them (several hundred per batch tops).
             ids = ', '.join(list(map(lambda x: f"('{x[0]}', {x[1]})", batch.keys())))
             old_ids_sql = f'SELECT post_type, post_id FROM analysis_posts_sentiment WHERE (post_type, post_id) IN ({ids})'
-            df_old_ids = db_utils.query(use_ssh, old_ids_sql, db_host, db_user, db_password, db_port, db, ssh_username, ssh_password)
 
-            for _, row in df_old_ids.iterrows():
-                batch.pop((row['post_type'], row['post_id']))
+            try:
+                df_old_ids = db_utils.query(use_ssh, old_ids_sql, db_host, db_user, db_password, db_port, db, ssh_username, ssh_password)
+
+                for _, row in df_old_ids.iterrows():
+                    batch.pop((row['post_type'], row['post_id']))
+            except:
+                logger.error(f'Exception associated to query {old_ids_sql}: {traceback.format_exc()}')
 
             for key, record in batch.items():
                 print(json.dumps(transform_record_for_prediction(record)))
+
 
             del batch
             gc.collect()

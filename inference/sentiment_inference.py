@@ -121,9 +121,9 @@ def predict_text_sentiment_vader_normalized(vader_analyzer, text):
     return (vs+1)/2
 
 
-def calculate_mixed_sentiment(model_scores, vader_score):
-    #Avg for the time being.
-    return (model_scores[1] + vader_score)/2
+def calculate_bull_vader_sentiment(model_scores, vader_score):
+    #Weighted avg for the time being.
+    return model_scores[1]*0.7 + vader_score*0.3
 
 
 def predict_json_record(
@@ -146,8 +146,11 @@ def predict_json_record(
             'bear_sentiment': float(scores[0]),
             'bull_sentiment': float(scores[1]),
             'vader_sentiment': float(vader_score),
-            'mixed_sentiment': calculate_mixed_sentiment(scores, vader_score)
+            'bull_vader_sentiment': calculate_bull_vader_sentiment(scores, vader_score)
         }
     }
+
+    # TODO: We'll do more robust / elegant field management once message processing matures in this project.
+    json_record['msgType'] = json_record['msgType'].replace('request', 'response')
 
     return json_record
