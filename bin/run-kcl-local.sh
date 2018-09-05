@@ -1,0 +1,14 @@
+#!/bin/bash -x
+DIR=$( cd ""$( dirname ""${BASH_SOURCE[0]}"" )"" && pwd )
+DATA_DIR=${DIR}/../../data
+UNIX_TIMESTAMP=`date +%s`
+
+export KCL_NODE=local
+export KCL_APPLICATION=automlpredictor-tesla-test-${KCL_NODE}
+export KCL_PATH=~/git/teslamonitor/streams
+export KCL_PROPERTIES_FILE=${KCL_NODE}.properties
+export KCL_OUTPUT_FILE=${DATA_DIR}/kinesis_${KCL_APPLICATION}_${UNIX_TIMESTAMP}.json
+
+cd $DIR/../streams
+/usr/bin/java -cp /Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/amazon-kinesis-client-1.9.0.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/aws-java-sdk-cloudwatch-1.11.272.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/aws-java-sdk-core-1.11.272.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/aws-java-sdk-dynamodb-1.11.272.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/aws-java-sdk-kinesis-1.11.272.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/aws-java-sdk-kms-1.11.272.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/aws-java-sdk-s3-1.11.272.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/commons-codec-1.9.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/commons-lang-2.6.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/commons-logging-1.1.3.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/guava-18.0.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/httpclient-4.5.2.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/httpcore-4.4.4.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/ion-java-1.0.2.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/jackson-annotations-2.6.0.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/jackson-core-2.6.7.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/jackson-databind-2.6.7.1.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/jackson-dataformat-cbor-2.6.7.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/jmespath-java-1.11.272.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/joda-time-2.8.1.jar:/Users/Miguel/anaconda3/envs/conda36/lib/python3.6/site-packages/amazon_kclpy/jars/protobuf-java-2.6.1.jar:${KCL_PATH} com.amazonaws.services.kinesis.multilang.MultiLangDaemon ${KCL_PROPERTIES_FILE}
+cd $DIR
