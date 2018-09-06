@@ -1,6 +1,6 @@
 import argparse
-from ..inference import message_utils
-from ..inference import db_utils
+from inference import message_utils
+from inference import db_utils
 
 import gc
 import json

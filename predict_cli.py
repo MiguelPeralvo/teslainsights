@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('TkAgg')
-from ..inference import sentiment_inference
-from ..inference import message_utils
+from inference import sentiment_inference
+from inference import message_utils
 import argparse
 import json
 
