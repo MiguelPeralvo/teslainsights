@@ -26,5 +26,5 @@ nohup sh -c "/usr/bin/java -cp /home/paperspace/anaconda3/lib/python3.6/site-pac
 sleep 45
 cd $DIR
 
-cd ${DIR}/../client
-nohup sh -c "python3.6 filter_posts_for_predict_cli -idf $KCL_OUTPUT_FILE -ssh | python3.6 predict_cli.py -if $STOCKTWITS_SENTIMENT_ITOS_MODEL_PATH -tcf $STOCKTWITS_SENTIMENT_MODEL_PATH  | python3.6 db_ingestor_cli.py -ssh" 2> ${DATA_DIR}/${STDERR_SENTIMENT_INFERENCE_FILE} &
+cd ${DIR}/..
+nohup sh -c "python3.6 client/filter_posts_for_predict_cli.py -idf $KCL_OUTPUT_FILE -ssh | python3.6 client/predict_cli.py -if $STOCKTWITS_SENTIMENT_ITOS_MODEL_PATH -tcf $STOCKTWITS_SENTIMENT_MODEL_PATH  | python3.6 client/db_ingestor_cli.py -ssh" 2> ${DATA_DIR}/${STDERR_SENTIMENT_INFERENCE_FILE} &
