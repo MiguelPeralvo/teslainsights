@@ -40,7 +40,8 @@ def filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
                     processed_posts.add(key)
                     posts_to_inspect[key] = record
 
-        yield posts_to_inspect
+        if len(posts_to_inspect) > 0:
+            yield posts_to_inspect
 
 
 if __name__ == '__main__':
@@ -75,23 +76,25 @@ if __name__ == '__main__':
     while True:
 
         for batch in filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
-            # Now we'll check in the db if we already processed them (several hundred per batch tops).
-            ids = ', '.join(list(map(lambda x: f"('{x[0]}', {x[1]})", batch.keys())))
-            old_ids_sql = f'SELECT post_type, post_id FROM analysis_posts_sentiment WHERE (post_type, post_id) IN ({ids})'
 
-            try:
-                df_old_ids = db_utils.query(use_ssh, old_ids_sql, db_host, db_user, db_password, db_port, db, ssh_username, ssh_password)
+            if batch and len(batch)>0:
+                # Now we'll check in the db if we already processed them (several hundred per batch tops).
+                ids = ', '.join(list(map(lambda x: f"('{x[0]}', {x[1]})", batch.keys())))
+                old_ids_sql = f'SELECT post_type, post_id FROM analysis_posts_sentiment WHERE (post_type, post_id) IN ({ids})'
 
-                for _, row in df_old_ids.iterrows():
-                    batch.pop((row['post_type'], row['post_id']))
-            except:
-                logger.error(f'Exception associated to query {old_ids_sql}: {traceback.format_exc()}')
+                try:
+                    df_old_ids = db_utils.query(use_ssh, old_ids_sql, db_host, db_user, db_password, db_port, db, ssh_username, ssh_password)
 
-            for key, record in batch.items():
-                print(json.dumps(transform_record_for_prediction(record)))
+                    for _, row in df_old_ids.iterrows():
+                        batch.pop((row['post_type'], row['post_id']))
+                except:
+                    logger.error(f'Exception associated to query {old_ids_sql}: {traceback.format_exc()}')
 
+                for key, record in batch.items():
+                    print(json.dumps(transform_record_for_prediction(record)))
 
-            del batch
+                del batch
+
             gc.collect()
             logger.info(f'Main loop: Going to sleep for {sleep_ms} milliseconds.')
             time.sleep(sleep_ms / 1000)
