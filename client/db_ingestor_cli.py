@@ -1,7 +1,7 @@
 import argparse
 import gc
-from inference import message_utils
-from inference import db_utils
+from ..inference import message_utils
+from ..inference import db_utils
 import os
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
