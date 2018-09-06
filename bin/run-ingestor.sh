@@ -2,8 +2,8 @@
 DIR=$( cd ""$( dirname ""${BASH_SOURCE[0]}"" )"" && pwd )
 DATA_DIR=${DIR}/../../data
 MODELS_DIR=${DIR}/../../models
-STOCKTWITS_SENTIMENT_MODEL_PATH=${MODELS_DIR}/models/fastai_dl2_p2_l10_stocktwits_transfer_learning_sentiment_classification_models_20180829/models/68714clas_2.h5
-STOCKTWITS_SENTIMENT_ITOS_MODEL_PATH=${MODELS_DIR}/models/fastai_dl2_p2_l10_stocktwits_transfer_learning_sentiment_classification_models_20180829/stocktwits_posts_lm/tmp/itos.pkl
+STOCKTWITS_SENTIMENT_MODEL_PATH=${MODELS_DIR}/fastai_dl2_p2_l10_stocktwits_transfer_learning_sentiment_classification_models_20180829/models/68714clas_2.h5
+STOCKTWITS_SENTIMENT_ITOS_MODEL_PATH=${MODELS_DIR}/fastai_dl2_p2_l10_stocktwits_transfer_learning_sentiment_classification_models_20180829/stocktwits_posts_lm/tmp/itos.pkl
 
 
 UNIX_TIMESTAMP=`date +%s`
