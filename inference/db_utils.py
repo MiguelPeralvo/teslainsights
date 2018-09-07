@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def query(use_ssh, q, db_host, db_user, db_password, db_port, db, ssh_username, ssh_password, charset='utf8mb4'):
+
     if use_ssh:
         with SSHTunnelForwarder(
                 ssh_address_or_host=(db_host, 22),
@@ -29,7 +30,9 @@ def query(use_ssh, q, db_host, db_user, db_password, db_port, db, ssh_username, 
                                passwd=db_password,
                                db=db,
                                charset=charset)
-            return pd.read_sql_query(q, conn)
+            response = pd.read_sql_query(q, conn)
+            conn.close()
+            return response
     else:
         conn = sql.connect(host=db_host,
                            port=db_port,
@@ -37,7 +40,41 @@ def query(use_ssh, q, db_host, db_user, db_password, db_port, db, ssh_username, 
                            passwd=db_password,
                            db=db,
                            charset=charset)
-        return pd.read_sql_query(q, conn)
+        response = pd.read_sql_query(q, conn)
+        conn.close()
+        return response
+
+def update(use_ssh, q, db_host, db_user, db_password, db_port, db, ssh_username, ssh_password, multi=True, charset='utf8mb4'):
+
+    if use_ssh:
+        with SSHTunnelForwarder(
+                ssh_address_or_host=(db_host, 22),
+                ssh_password=ssh_password,
+                ssh_username=ssh_username,
+                remote_bind_address=('127.0.0.1', db_port)
+        ) as server:
+            conn = sql.connect(host='127.0.0.1',
+                               port=server.local_bind_port,
+                               user=db_user,
+                               passwd=db_password,
+                               db=db,
+                               charset=charset)
+            cursor = conn.cursor()
+            cursor.execute(q, multi=multi)
+            conn.commit()
+            conn.close()
+
+    else:
+        conn = sql.connect(host=db_host,
+                           port=db_port,
+                           user=db_user,
+                           passwd=db_password,
+                           db=db,
+                           charset=charset)
+        cursor = conn.cursor()
+        cursor.execute(q, multi=multi)
+        conn.commit()
+        conn.close()
 
 
 def reconnect_db(ssh, db_host, database_name, db_user, db_password, db_port, ssh_username, ssh_password, charset='utf8mb4'):
