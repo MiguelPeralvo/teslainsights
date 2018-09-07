@@ -75,7 +75,9 @@ def softmax(x):
     exp_x = np.exp(x - max_x)
     return exp_x / np.sum(exp_x, axis=1).reshape((-1, 1))
 
-def predict_text_sentiment(stoi, model, text):
+
+# Warning: If there are not enough cores and try parallel, we may get the "ValueError: max_workers must be greater than 0" exception
+def predict_text_sentiment(stoi, model, text, parallel=False):
     """Do the actual prediction on the text using the
         model and mapping files passed
     """
@@ -90,7 +92,10 @@ def predict_text_sentiment(stoi, model, text):
     texts = [input_str]
 
     # tokenize using the fastai wrapper around spacy
-    tok = Tokenizer().proc_all_mp(partition_by_cores(texts))
+    if parallel:
+        tok = Tokenizer().proc_all_mp(partition_by_cores(texts))
+    else:
+        tok = Tokenizer().proc_all(texts, lang='en')
 
     # turn into integers for each word
     encoded = [stoi[p] for p in tok[0]]
@@ -133,7 +138,7 @@ def predict_json_record(
     text = json_record['data']['text']
 
     # Softmax: model_scores[1] (bull) + model_scores[0] (bear) = 1.0
-    scores = predict_text_sentiment(stoi, model, text)
+    scores = predict_text_sentiment(stoi, model, text, num_cpus() > 1)
     vader_score = predict_text_sentiment_vader_normalized(vader_analyzer, text)
     delta_ts = datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)
     prediction_processed_ts_ms = int((delta_ts.days * 24 * 60 * 60 + delta_ts.seconds) * 1000 + delta_ts.microseconds / 1000.0)
