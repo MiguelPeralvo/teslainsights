@@ -44,7 +44,7 @@ def compute_impact(post):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-db', '--database_name', help='Database where to store the data', type=str, default='automlpredictor_db_dashboard')
-    parser.add_argument('-s', '--sleep_ms', help='Sleep in millisecs', type=int, default=5000)
+    parser.add_argument('-s', '--sleep_ms', help='Sleep in millisecs', type=int, default=60000)
     parser.add_argument('-ssh', '--ssh', help='Use ssh', action='store_true', required=False)
 
     args = parser.parse_args()
