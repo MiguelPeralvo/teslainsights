@@ -61,23 +61,28 @@ if __name__ == '__main__':
     processed_posts = LRU(10000)
 
     while True:
-        df_relevant_posts = get_relevant_posts(ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
-        # print(df_relevant_posts)
-        relevant_posts = df_relevant_posts.to_dict('records')
-        posts_to_update = []
 
-        for relevant_post in relevant_posts:
-            # message_id, conversation_replies, likes_total
-            current_id = relevant_post['message_id']
-            values = {}
-            current_post_prev_version = processed_posts.get(current_id, None)
+        try:
+            df_relevant_posts = get_relevant_posts(ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
+            # print(df_relevant_posts)
+            relevant_posts = df_relevant_posts.to_dict('records')
+            posts_to_update = []
 
-            if relevant_post != current_post_prev_version:
-                processed_posts[current_id] = relevant_post
-                posts_to_update.append((current_id, compute_impact(relevant_post)))
+            for relevant_post in relevant_posts:
+                # message_id, conversation_replies, likes_total
+                current_id = relevant_post['message_id']
+                values = {}
+                current_post_prev_version = processed_posts.get(current_id, None)
 
-        if len(posts_to_update) > 0:
-            update_impact_in_db(posts_to_update, ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
+                if relevant_post != current_post_prev_version:
+                    processed_posts[current_id] = relevant_post
+                    posts_to_update.append((current_id, compute_impact(relevant_post)))
+
+            if len(posts_to_update) > 0:
+                update_impact_in_db(posts_to_update, ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
+        except:
+            logger.error(f'An error occurred while processing global sentiment: {traceback.format_exc()}')
+
 
         gc.collect()
         logger.info(f'Main loop: Going to sleep for {sleep_ms} milliseconds.')
