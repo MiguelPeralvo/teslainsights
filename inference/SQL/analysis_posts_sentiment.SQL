@@ -18,3 +18,6 @@ ALTER TABLE analysis_posts_sentiment ADD INDEX created_at_epoch_ms (created_at_e
 ALTER TABLE analysis_posts_sentiment ADD INDEX user_name (user_name);
 
 ALTER TABLE analysis_posts_sentiment CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE analysis_posts_sentiment ADD impact DECIMAL(10,2) AFTER body;
+
