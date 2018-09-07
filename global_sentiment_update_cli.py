@@ -42,7 +42,7 @@ def insert_current_global_sentiment_in_db(use_ssh, db_host, db_user, db_password
 
     sql_for_insert = """
         INSERT INTO analysis_global_sentiment(sentiment_type, created_at_epoch_ms, sentiment_absolute)
-        (SELECT 'stocktwits', UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5)) 
+        (SELECT 'stocktwits', UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id) 
         FROM analysis_posts_sentiment 
         WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*3600*1000)));        
     """
@@ -51,7 +51,7 @@ def insert_current_global_sentiment_in_db(use_ssh, db_host, db_user, db_password
 
     sql_for_insert = """
         INSERT INTO analysis_global_sentiment(sentiment_type, created_at_epoch_ms, sentiment_absolute)
-        (SELECT 'social_media', UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))
+        (SELECT 'social_media', UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id)
         FROM analysis_posts_sentiment
         WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*3600*1000)));
     """
