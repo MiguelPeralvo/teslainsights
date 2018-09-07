@@ -128,7 +128,7 @@ def predict_text_sentiment_vader_normalized(vader_analyzer, text):
 
 def calculate_bull_vader_sentiment(model_scores, vader_score):
     #Weighted avg for the time being.
-    return model_scores[1]*0.7 + vader_score*0.3
+    return model_scores[1]*0.75 + vader_score*0.25
 
 
 def predict_json_record(
