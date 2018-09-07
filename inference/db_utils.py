@@ -72,6 +72,7 @@ def map_msgs_to_db_objects(classes, msgs: Iterable[Dict[str, object]]) -> Iterab
             'post_type': msg['msgType'].replace('-sentiment-response', ''),
             'post_id': id,
             'body': msg['data']['text'],
+            'impact': 1,
             'link': f'https://stocktwits.com/{user_name}/message/{id}',
             'user_name': user_name,
             'created_at_epoch_ms': created_at_epoch_ms,
