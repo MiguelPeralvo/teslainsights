@@ -31,32 +31,42 @@ def get_relevant_posts(use_ssh, db_host, db_user, db_password, db_port, database
 
 
 def update_impact_in_db(posts_to_update: List[Tuple[int, float]], use_ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password, post_type='stocktwit'):
-    sql_for_update = ''.join([
+    sql_for_update = [
         f"UPDATE analysis_posts_sentiment SET impact={float(impact)} WHERE post_id={post_id} AND post_type='{post_type}';\n\n" for (post_id, impact) in posts_to_update
-    ])
+    ]
+
+    logger.info(f'Running updates: {sql_for_update}')
     db_utils.update(use_ssh, sql_for_update, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
+    logger.info(f'Completed updates: {sql_for_update}')
 
 
 def insert_current_global_sentiment_in_db(use_ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password):
     # For the time being, we'll equate stocktwits to social media
 
-    sql_for_insert = """
+    sql_for_insert_stocktwits = """
         INSERT INTO analysis_global_sentiment(sentiment_type, created_at_epoch_ms, sentiment_absolute)
         (SELECT 'stocktwits', UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id) 
         FROM analysis_posts_sentiment 
         WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*3600*1000)));        
     """
 
-    db_utils.update(use_ssh, sql_for_insert, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password, multi=False)
-
-    sql_for_insert = """
+    sql_for_insert_social_media = """
         INSERT INTO analysis_global_sentiment(sentiment_type, created_at_epoch_ms, sentiment_absolute)
         (SELECT 'social_media', UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id)
         FROM analysis_posts_sentiment
         WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*3600*1000)));
     """
 
-    db_utils.update(use_ssh, sql_for_insert, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password, multi=False)
+    sql_for_insert = [sql_for_insert_stocktwits, sql_for_insert_social_media]
+
+    logger.info(f'Running inserts: {sql_for_insert}')
+
+    db_utils.update(
+        use_ssh, sql_for_insert,
+        db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password
+    )
+
+    logger.info(f'Completed inserts: {sql_for_insert}')
 
 
 def compute_impact(post):

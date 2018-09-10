@@ -44,7 +44,7 @@ def query(use_ssh, q, db_host, db_user, db_password, db_port, db, ssh_username, 
         conn.close()
         return response
 
-def update(use_ssh, q, db_host, db_user, db_password, db_port, db, ssh_username, ssh_password, multi=True, charset='utf8mb4'):
+def update(use_ssh, queries, db_host, db_user, db_password, db_port, db, ssh_username, ssh_password, charset='utf8mb4'):
 
     if use_ssh:
         with SSHTunnelForwarder(
@@ -60,7 +60,10 @@ def update(use_ssh, q, db_host, db_user, db_password, db_port, db, ssh_username,
                                db=db,
                                charset=charset)
             cursor = conn.cursor()
-            cursor.execute(q, multi=multi)
+
+            for q in queries:
+                cursor.execute(q)
+
             conn.commit()
             conn.close()
 
@@ -72,7 +75,10 @@ def update(use_ssh, q, db_host, db_user, db_password, db_port, db, ssh_username,
                            db=db,
                            charset=charset)
         cursor = conn.cursor()
-        cursor.execute(q, multi=multi)
+
+        for q in queries:
+            cursor.execute(q)
+
         conn.commit()
         conn.close()
 
