@@ -8,6 +8,7 @@ STOCKTWITS_SENTIMENT_ITOS_MODEL_PATH=${MODELS_DIR}/fastai_dl2_p2_l10_stocktwits_
 
 UNIX_TIMESTAMP=`date +%s`
 STDERR_FILE=kcl_ingestor_paperspace_${UNIX_TIMESTAMP}_epoch_tsla.stderr
+STDERR_FILTER_INGESTOR_FILE=filter_ingestor_paperspace_${UNIX_TIMESTAMP}_epoch_tsla.stderr
 STDERR_DB_INGESTOR_FILE=db_ingestor_paperspace_${UNIX_TIMESTAMP}_epoch_tsla.stderr
 STDERR_SENTIMENT_INFERENCE_FILE=sentiment_inference_paperspace_${UNIX_TIMESTAMP}_epoch_tsla.stderr
 STDERR_GLOBAL_SENTIMENT_UPDATE_FILE=global_sentiment_update_paperspace_${UNIX_TIMESTAMP}_epoch_tsla.stderr
@@ -29,7 +30,7 @@ nohup sh -c "/usr/bin/java -cp /home/paperspace/anaconda3/lib/python3.6/site-pac
 sleep 45
 
 cd ${DIR}/..
-nohup sh -c "python3.6 filter_posts_for_predict_cli.py -idf $KCL_OUTPUT_FILE -ssh | python3.6 predict_cli.py -if $STOCKTWITS_SENTIMENT_ITOS_MODEL_PATH -tcf $STOCKTWITS_SENTIMENT_MODEL_PATH  | python3.6 db_ingestor_cli.py -ssh" 2> ${DATA_DIR}/${STDERR_SENTIMENT_INFERENCE_FILE} &
+nohup sh -c "python3.6 filter_posts_for_predict_cli.py -idf $KCL_OUTPUT_FILE -ssh  2> ${DATA_DIR}/${STDERR_FILTER_INGESTOR_FILE} | python3.6 predict_cli.py -if $STOCKTWITS_SENTIMENT_ITOS_MODEL_PATH -tcf $STOCKTWITS_SENTIMENT_MODEL_PATH 2> ${DATA_DIR}/${STDERR_SENTIMENT_INFERENCE_FILE} | python3.6 db_ingestor_cli.py -ssh 2> ${DATA_DIR}/${STDERR_DB_INGESTOR_FILE}" &
 
 nohup sh -c "python3.6 global_sentiment_update_cli.py -ssh " 2> ${DATA_DIR}/${STDERR_GLOBAL_SENTIMENT_UPDATE_FILE} &
-
+cd $DIR
