@@ -33,6 +33,8 @@ def filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
         # print(input_msgs)
         for record in input_msgs:
             if record['msgType'] == 'stocktwit':
+                logger.info(f'Detected {record["msgType"]} msg')
+
                 # TODO: Generalise to extract fields for other message types
                 key = (record['msgType'], record['data']['id'])
 
@@ -41,6 +43,7 @@ def filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
                     posts_to_inspect[key] = record
 
         if len(posts_to_inspect) > 0:
+            logger.info(f'Consuming {len(posts_to_inspect)} records for review, filtering and transformation')
             yield posts_to_inspect
 
 
