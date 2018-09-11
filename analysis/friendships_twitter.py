@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--sleep_ms', help='Sleep between cycles (once gone through all the items to be requested) in millisecs', type=int, default=60000)
     parser.add_argument('-sp', '--sleep_between_pages_ms',
-                        help='Sleep between pages to be requested (once gone through all the items to be requested) in millisecs', type=int, default=15000)
+                        help='Sleep between pages to be requested (once gone through all the items to be requested) in millisecs', type=int, default=3000)
     # parser.add_argument('-i', '--since_id', help='Returns results with an ID greater than (that is, more recent than) the specified ID.', type=int, default=995748957413429250)
     args = parser.parse_args()
     sleep_ms = int(args.sleep_ms)
@@ -55,6 +55,7 @@ if __name__ == '__main__':
                         friends_list = friends.get(user['screen_name'], [])
                         friends_list.extend(friends_page)
                         friends[user['screen_name']] = friends_list
+                        sleep(sleep_between_pages_ms / 1000)
 
                     sleep(sleep_between_pages_ms / 1000)
 
