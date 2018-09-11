@@ -90,6 +90,8 @@ if __name__ == '__main__':
                 except:
                     logger.error(f'Exception associated to query {old_ids_sql}: {traceback.format_exc()}')
 
+                logger.info(f'Emitting {len(batch)} records for inference')
+
                 for key, record in batch.items():
                     print(json.dumps(transform_record_for_prediction(record)))
 
