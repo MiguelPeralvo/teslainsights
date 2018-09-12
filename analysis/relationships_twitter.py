@@ -1,4 +1,5 @@
 import argparse
+import json
 import networkx as nx
 from time import sleep
 from collections import namedtuple
@@ -77,6 +78,7 @@ if __name__ == '__main__':
                     if relationship=='self':
                         related_users[user['id']] = {
                             'id': user['id'],
+                            'name': user['name'],
                             'screen_name': user['screen_name']
                         }
                     else:
@@ -103,5 +105,5 @@ if __name__ == '__main__':
             logger.error(f'An error occurred: {traceback.format_exc()}')
 
     for user in related_users.values():
-        print(user)
+        print(json.dumps(user))
 
