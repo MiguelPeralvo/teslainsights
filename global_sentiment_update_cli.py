@@ -20,7 +20,7 @@ def get_relevant_posts(use_ssh, db_host, db_user, db_password, db_port, database
   relevant_posts_sql = f'''
     SELECT message_id, conversation_replies, likes_total FROM data_stocktwits_posts_rt
     WHERE message_id IN (SELECT post_id FROM analysis_posts_sentiment 
-    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*3600*1000)) AND post_type = 'stocktwit');
+    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*3600*1000)) AND post_type = 'stocktwit');
   '''
 
   df_relevant_posts = db_utils.query(use_ssh, relevant_posts_sql, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
@@ -47,14 +47,14 @@ def insert_current_global_sentiment_in_db(use_ssh, db_host, db_user, db_password
         INSERT INTO analysis_global_sentiment(sentiment_type, created_at_epoch_ms, sentiment_absolute)
         (SELECT 'stocktwits', UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id) 
         FROM analysis_posts_sentiment 
-        WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*3600*1000)));        
+        WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*3600*1000)));        
     """
 
     sql_for_insert_social_media = """
         INSERT INTO analysis_global_sentiment(sentiment_type, created_at_epoch_ms, sentiment_absolute)
         (SELECT 'social_media', UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id)
         FROM analysis_posts_sentiment
-        WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*3600*1000)));
+        WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*3600*1000)));
     """
 
     sql_for_insert = [sql_for_insert_stocktwits, sql_for_insert_social_media]
