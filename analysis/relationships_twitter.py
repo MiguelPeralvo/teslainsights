@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--relationship', help='Relationship: self/friend/follower', type=str, default='self', choices={'self', 'friend', 'follower'})
-    parser.add_argument('-s', '--sentiment', help='Sentiment: bulls/bears', type=str, default='bears', choices={'bulls', 'bears'})
+    parser.add_argument('-s', '--sentiment', help='Sentiment: bulls/bears', type=str, default='bears', choices={'musk', 'bulls', 'bears'})
     parser.add_argument('-sp', '--sleep_between_pages_ms',
                         help='Sleep between pages to be requested (once gone through all the items to be requested) in millisecs', type=int, default=60000)
     # parser.add_argument('-i', '--since_id', help='Returns results with an ID greater than (that is, more recent than) the specified ID.', type=int, default=995748957413429250)
@@ -34,6 +34,10 @@ if __name__ == '__main__':
 
     TwitterList = namedtuple('TwitterList', ['list_id', 'list_name', 'list_uri'])
 
+    musk_lists = [
+        TwitterList(1014546986647851010, 'Elon', '/futuresemantics/lists/elon'),
+    ]
+
     bulls_lists = [
         TwitterList(977204527764877317, 'tesla.geeks', '/c4chaos/lists/tesla-geeks'),
         TwitterList(1014227248541589504, 'Protesla-bulls', '/futuresemantics/lists/protesla-bulls'),
@@ -51,9 +55,11 @@ if __name__ == '__main__':
     elif relationship == 'follower':
         relationship_method = twitter.get_followers_list
 
-    if sentiment == 'bulls':
+    if sentiment == 'musk':
+        lists_to_scan = musk_lists
+    elif sentiment == 'bulls':
         lists_to_scan = bulls_lists
-    else:
+    elif sentiment == 'bears':
         lists_to_scan = bears_lists
 
     related_users = {}
@@ -71,7 +77,6 @@ if __name__ == '__main__':
                     if relationship=='self':
                         related_users[user['id']] = {
                             'id': user['id'],
-                            'name': user['name'],
                             'screen_name': user['screen_name']
                         }
                     else:
