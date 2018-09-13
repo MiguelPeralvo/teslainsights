@@ -20,27 +20,6 @@ def transform_record_for_prediction(record):
     return record
 
 
-def filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
-    if input_data_file_path:
-        input_handle = open(input_data_file_path, 'r')
-    else:
-        input_handle = sys.stdin
-
-    for input_msgs in message_utils.read_json_input(batch_size, input_handle, sleep_ms):
-        posts_to_inspect = {}
-        # print(input_msgs)
-        for record in input_msgs:
-            if record['msgType'] == 'stocktwit':
-                # TODO: Generalise to extract fields for other message types
-                key = (record['msgType'], record['data']['id'])
-
-                if key not in processed_posts:
-                    processed_posts.add(key)
-                    posts_to_inspect[key] = record
-
-        yield posts_to_inspect
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-bs', '--batch_size', help='Number of records per read, between commits.', type=int, default=5)

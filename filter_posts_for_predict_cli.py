@@ -16,9 +16,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 def transform_record_for_prediction(record):
+
+    if record['msgType'] == 'stocktwit':
+        record['data']['text'] = record['data']['body']
+        record['data'].pop('body')
+
     record['msgType'] = record.get('msgType', '') + '-sentiment-request'
-    record['data']['text'] = record['data']['body']
-    record['data'].pop('body')
     return record
 
 
@@ -32,11 +35,11 @@ def filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
         posts_to_inspect = {}
         # print(input_msgs)
         for record in input_msgs:
-            if record['msgType'] == 'stocktwit':
-                logger.info(f'Detected {record["msgType"]} msg')
+            if record['msgType'] in ['stocktwit', 'twitter-user', 'twitter-topic']:
+                # logger.info(f'Detected {record["msgType"]} msg')
 
                 # TODO: Generalise to extract fields for other message types
-                key = (record['msgType'], record['data']['id'])
+                key = (record['msgType'][:7], record['data']['id'])
 
                 if key not in processed_posts:
                     processed_posts.add(key)
