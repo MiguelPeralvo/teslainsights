@@ -11,6 +11,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 
+def recreate_twitter_connection(_consumer_key, _consumer_secret):
+    conn = Twython(_consumer_key, _consumer_secret, oauth_version=2)
+    access_token = conn.obtain_access_token()
+    final_conn = Twython(_consumer_key, access_token=access_token)
+    return final_conn
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--relationship', help='Relationship: self/friend/follower', type=str, default='self', choices={'self', 'friend', 'follower'})
@@ -28,10 +34,7 @@ if __name__ == '__main__':
     consumer_secret = os.getenv('TWITTER_CONSUMER_SECRET')
 
     # OAUTH2
-    twitter = Twython(consumer_key, consumer_secret, oauth_version=2)
-    access_token = twitter.obtain_access_token()
-
-    twitter = Twython(consumer_key, access_token=access_token)
+    twitter = recreate_twitter_connection(consumer_key, consumer_secret)
 
     TwitterList = namedtuple('TwitterList', ['list_id', 'list_name', 'list_uri'])
 
@@ -71,7 +74,7 @@ if __name__ == '__main__':
             list_users = twitter.cursor(twitter.get_list_members, list_id=twitter_list.list_id, return_pages=True, count=100)
 
             for page in list_users:
-                logger.info(f"Getting page for list {twitter_list.list_id}  {twitter_list.list_name}")
+                logger.info(f"{relationship} - {sentiment}: Getting page for list {twitter_list.list_id}  {twitter_list.list_name}")
 
                 for user in page:
 
@@ -85,7 +88,7 @@ if __name__ == '__main__':
                         related_users_pages = twitter.cursor(relationship_method, screen_name=user['screen_name'], return_pages=True)
 
                         for related_users_page in related_users_pages:
-                            logger.info(f"Getting page for user {user['screen_name']}")
+                            logger.info(f"{relationship} - {sentiment}: Getting page for user {user['screen_name']}")
 
                             for related_user in related_users_page:
                                 if related_user['id'] not in related_users:
@@ -103,6 +106,7 @@ if __name__ == '__main__':
 
         except:
             logger.error(f'An error occurred: {traceback.format_exc()}')
+            twitter = recreate_twitter_connection(consumer_key, consumer_secret)
 
     for user in related_users.values():
         print(json.dumps(user))
