@@ -37,9 +37,9 @@ def filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
         for record in input_msgs:
             msg_type = record['msgType']
 
-            if msg_type in ['stocktwit', 'twitter-topic']:  # We'll keep 'twitter-user' out for the time being.
+            if msg_type in ['stocktwit', 'twitter-topic', 'twitter-user']:  # We'll keep  out for the time being.
                 # logger.info(f'Detected {record["msgType"]} msg')
-                if msg_type == 'twitter-topic':
+                if msg_type in ['twitter-topic', 'twitter-user']:
                     text = str(record['data']['text']).lower()
 
                     # We only target certain topics for the time being.
