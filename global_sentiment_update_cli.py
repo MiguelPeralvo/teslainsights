@@ -29,13 +29,13 @@ def get_relevant_posts(use_ssh, db_host, db_user, db_password, db_port, database
     
     SELECT 'twitter-user' as post_type, tweet_id as message_id, retweet_count as interaction_total, favorite_count as likes_total FROM data_twitter_users_rt
     WHERE tweet_id IN (SELECT post_id FROM analysis_posts_sentiment 
-    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*3600*1000)) AND post_type = 'twitter-user')
+    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(6*3600*1000)) AND post_type = 'twitter-user')
         
     UNION
     
     SELECT 'twitter-topic' as post_type, tweet_id as message_id, retweet_count as interaction_total, favorite_count as likes_total FROM data_twitter_topics_rt
     WHERE tweet_id IN (SELECT post_id FROM analysis_posts_sentiment 
-    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*3600*1000)) AND post_type = 'twitter-topic')
+    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(6*3600*1000)) AND post_type = 'twitter-topic')
     ) impact 
     GROUP BY post_type, message_id;
     
