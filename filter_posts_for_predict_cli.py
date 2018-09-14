@@ -71,7 +71,7 @@ if __name__ == '__main__':
     db = 'automlpredictor_db_dashboard'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-bs', '--batch_size', help='Number of records per read.', type=int, default=5)
+    parser.add_argument('-bs', '--batch_size', help='Number of records per read.', type=int, default=500)
     parser.add_argument('-db', '--database_name', help='Database where to store the data', type=str, default='automlpredictor_db_dashboard')
     parser.add_argument(
         '-idf', '--input_data_file_path', help='Path for the data file. If not specified, we\'ll read the data from stdin',
