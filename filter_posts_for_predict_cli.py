@@ -43,7 +43,7 @@ def filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
                     text = str(record['data']['text']).lower()
 
                     # We only target certain topics for the time being.
-                    if not text.str.contains('|'.join(['elon musk', 'tesla', 'tsla', 'tslaq', 'elonmusk'])):
+                    if not any(topic in text for topic in ['elon musk', 'tesla', 'tsla', 'tslaq', 'elonmusk']):
                         continue
 
                 # TODO: Generalise to extract fields for other message types
