@@ -35,7 +35,7 @@ def filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
         posts_to_inspect = {}
         # print(input_msgs)
         for record in input_msgs:
-            if record['msgType'] in ['stocktwit', 'twitter-user', 'twitter-topic']:
+            if record['msgType'] in ['stocktwit', 'twitter-topic']:  # We'll keep 'twitter-user' out for the time being.
                 # logger.info(f'Detected {record["msgType"]} msg')
 
                 # TODO: Generalise to extract fields for other message types
