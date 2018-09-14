@@ -131,11 +131,11 @@ def calculate_bull_vader_sentiment(model_scores, vader_score):
     return model_scores[1]*0.8 + vader_score*0.2
 
 
-def predict_json_record(
-        json_record, stoi, model, vader_analyzer,
+def predict_record(
+        record, stoi, model, vader_analyzer,
         itos_file_path, trained_classifier_file_path, input_data_file_path
 ):
-    text = json_record['data']['text']
+    text = record['data']['text']
 
     # Softmax: model_scores[1] (bull) + model_scores[0] (bear) = 1.0
     scores = predict_text_sentiment(stoi, model, text, num_cpus() > 1)
@@ -143,7 +143,7 @@ def predict_json_record(
     delta_ts = datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)
     prediction_processed_ts_ms = int((delta_ts.days * 24 * 60 * 60 + delta_ts.seconds) * 1000 + delta_ts.microseconds / 1000.0)
 
-    json_record['predictions'] = {
+    record['predictions'] = {
         'model': trained_classifier_file_path,
         'context': [{'stoi': itos_file_path, 'inputDataset': input_data_file_path}],
         'predictionProcessedTsMs': prediction_processed_ts_ms,
@@ -156,6 +156,6 @@ def predict_json_record(
     }
 
     # TODO: We'll do more robust / elegant field management once message processing matures in this project.
-    json_record['msgType'] = json_record['msgType'].replace('request', 'response')
+    record['msgType'] = record['msgType'].replace('request', 'response')
 
-    return json_record
+    return record

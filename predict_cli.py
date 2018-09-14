@@ -45,7 +45,6 @@ def predict_input(models, input_data_file_path, batch_size, sleep_ms):
 
     vader_analyzer = sentiment_inference.load_vader_analyzer()
 
-
     if input_data_file_path:
         input_handle = open(input_data_file_path, 'r')
     else:
@@ -53,15 +52,16 @@ def predict_input(models, input_data_file_path, batch_size, sleep_ms):
 
     for input_msgs in message_utils.read_json_input(batch_size, input_handle, sleep_ms):
         # print(input_msgs)
-        for json_record in input_msgs:
-            msg_type = json_record['msgType']
+        for record in input_msgs:
+            msg_type = record['msgType']
             stoi = models[msg_type].stoi
             model = models[msg_type].classification_model
             itos_file_path = models[msg_type].itos_file_path
             trained_classifier_file_path = models[msg_type].trained_classifier_file_path
+            logger.info(f'Predicting sentiment for {record}')
 
-            yield(sentiment_inference.predict_json_record(
-                json_record, stoi, model, vader_analyzer, itos_file_path,
+            yield(sentiment_inference.predict_record(
+                record, stoi, model, vader_analyzer, itos_file_path,
                 trained_classifier_file_path, input_data_file_path)
             )
 
@@ -97,5 +97,7 @@ if __name__ == '__main__':
         twitter_itos_file_path, twitter_trained_classifier_file_path
     )
 
-    for json_line in predict_input(models, input_data_file_path, batch_size, sleep_ms):
-        print(json.dumps(json_line))
+    for record in predict_input(models, input_data_file_path, batch_size, sleep_ms):
+        json_record = json.dumps(record)
+        logger.info(f'Predicted sentiment for {json_record}')
+        print(json_record)
