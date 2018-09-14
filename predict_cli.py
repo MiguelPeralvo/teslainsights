@@ -51,14 +51,14 @@ def predict_input(models, input_data_file_path, batch_size, sleep_ms):
         input_handle = sys.stdin
 
     for input_msgs in message_utils.read_json_input(batch_size, input_handle, sleep_ms):
-        # print(input_msgs)
+        logger.info(f'Received batch of {len(input_msgs)} messagesls -la')
         for record in input_msgs:
             msg_type = record['msgType']
             stoi = models[msg_type].stoi
             model = models[msg_type].classification_model
             itos_file_path = models[msg_type].itos_file_path
             trained_classifier_file_path = models[msg_type].trained_classifier_file_path
-            logger.info(f'Predicting sentiment for {record}')
+            logger.info(f'Predicting sentiment for {msg_type}')
 
             yield(sentiment_inference.predict_record(
                 record, stoi, model, vader_analyzer, itos_file_path,
@@ -98,6 +98,6 @@ if __name__ == '__main__':
     )
 
     for record in predict_input(models, input_data_file_path, batch_size, sleep_ms):
+        logger.info(f"Predicted sentiment for {record['msgType']}")
         json_record = json.dumps(record)
-        logger.info(f'Predicted sentiment for {json_record}')
         print(json_record)
