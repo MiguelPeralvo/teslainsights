@@ -135,6 +135,7 @@ if __name__ == '__main__':
 
             if len(posts_to_update) > 0:
                 update_impact_in_db(posts_to_update, ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
+                insert_current_global_sentiment_in_db(ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
 
         except:
             logger.error(f'An error occurred while processing global sentiment: {traceback.format_exc()}')
