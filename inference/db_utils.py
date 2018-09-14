@@ -171,6 +171,7 @@ def map_msgs_to_db_objects(classes, msgs: Iterable[Dict[str, object]]) -> Iterab
         # Map from dictionary to class associated to table (ORM)
         mapper = mappers[msg['msgType']]# map_stocktwits_sentiment(msg)
         mapped_obj = mapper(msg)
+        logger.info(f'Mapped object into {mapped_obj} message')
 
         if mapped_obj:
             obj_class = msg_type_classes[msg['msgType']]

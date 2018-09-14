@@ -57,7 +57,6 @@ if __name__ == '__main__':
     for input_msgs in message_utils.read_json_input(batch_size, input_handle, sleep_ms):
         # try:
         logger.info(f'Ingesting {len(input_msgs)} messages')
-        logger.info(f'Ingesting {input_msgs} messages')
 
         try:
             session = Session(engine)
