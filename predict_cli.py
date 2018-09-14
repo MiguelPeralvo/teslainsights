@@ -51,7 +51,7 @@ def predict_input(models, input_data_file_path, batch_size, sleep_ms):
         input_handle = sys.stdin
 
     for input_msgs in message_utils.read_json_input(batch_size, input_handle, sleep_ms):
-        logger.info(f'Received batch of {len(input_msgs)} messagesls -la')
+        logger.info(f'Received batch of {len(input_msgs)} messages')
         for record in input_msgs:
             msg_type = record['msgType']
             stoi = models[msg_type].stoi
