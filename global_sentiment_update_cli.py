@@ -23,19 +23,19 @@ def get_relevant_posts(use_ssh, db_host, db_user, db_password, db_port, database
     (
     SELECT 'stocktwit' as post_type, message_id, conversation_replies as interaction_total, likes_total FROM data_stocktwits_posts_rt
     WHERE message_id IN (SELECT post_id FROM analysis_posts_sentiment 
-    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(6*3600*1000)) AND post_type = 'stocktwit')
+    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(12*3600*1000)) AND post_type = 'stocktwit')
     
     UNION
     
     SELECT 'twitter-user' as post_type, tweet_id as message_id, retweet_count as interaction_total, favorite_count as likes_total FROM data_twitter_users_rt
     WHERE tweet_id IN (SELECT post_id FROM analysis_posts_sentiment 
-    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(6*3600*1000)) AND post_type = 'twitter-user')
+    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(12*3600*1000)) AND post_type = 'twitter-user')
         
     UNION
     
     SELECT 'twitter-topic' as post_type, tweet_id as message_id, retweet_count as interaction_total, favorite_count as likes_total FROM data_twitter_topics_rt
     WHERE tweet_id IN (SELECT post_id FROM analysis_posts_sentiment 
-    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(6*3600*1000)) AND post_type = 'twitter-topic')
+    WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(12*3600*1000)) AND post_type = 'twitter-topic')
     ) impact 
     GROUP BY post_type, message_id;
     
@@ -62,16 +62,16 @@ def insert_current_global_sentiment_in_db(use_ssh, db_host, db_user, db_password
 
     sql_for_insert_stocktwits = """
         INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
-        (SELECT 'stocktwits', 6*3600, UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id) 
+        (SELECT 'stocktwits', 12*3600, UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id) 
         FROM analysis_posts_sentiment 
-        WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(6*3600*1000)) AND post_type IN ('stocktwit'));       
+        WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(12*3600*1000)) AND post_type IN ('stocktwit'));       
     """
 
     sql_for_insert_twitter = """
         INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
-        (SELECT 'twitter', 6*3600, UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id)
+        (SELECT 'twitter', 12*3600, UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id)
         FROM analysis_posts_sentiment
-        WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(6*3600*1000)) AND post_type IN ('twitter-topic', 'twitter-user'));
+        WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(12*3600*1000)) AND post_type IN ('twitter-topic', 'twitter-user'));
     """
 
     sql_for_insert = [sql_for_insert_stocktwits, sql_for_insert_twitter]
