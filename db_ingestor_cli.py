@@ -22,13 +22,13 @@ def transform_record_for_prediction(record):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-bs', '--batch_size', help='Number of records per read, between commits.', type=int, default=50)
+    parser.add_argument('-bs', '--batch_size', help='Number of records per read, between commits.', type=int, default=5)
     parser.add_argument('-db', '--database_name', help='Database where to store the data', type=str, default='automlpredictor_db_dashboard')
     parser.add_argument(
         '-idf', '--input_data_file_path', help='Path for the data file. If not specified, we\'ll read the data from stdin',
         type=str, required=False
     )
-    parser.add_argument('-s', '--sleep_ms', help='Sleep in millisecs', type=int, default=5000)
+    parser.add_argument('-s', '--sleep_ms', help='Sleep in millisecs', type=int, default=50)
     parser.add_argument('-ssh', '--ssh', help='Use ssh', action='store_true', required=False)
 
     args = parser.parse_args()

@@ -77,10 +77,10 @@ if __name__ == '__main__':
     parser.add_argument('-ttcf', '--twitter_trained_classifier_file_path', help='Path for the data file. If not specified, we\'ll read the data from stdin', type=str,
                         required=True)
 
-    parser.add_argument('-bs', '--batch_size', help='Number of records per read.', type=int, default=50)
+    parser.add_argument('-bs', '--batch_size', help='Number of records per read.', type=int, default=5)
     parser.add_argument('-idf', '--input_data_file_path', help='Path for the data file. If not specified, we\'ll read the data from stdin', type=str,
                         required=False)
-    parser.add_argument('-s', '--sleep_ms', help='Sleep in millisecs', type=int, default=1000)
+    parser.add_argument('-s', '--sleep_ms', help='Sleep in millisecs', type=int, default=10)
 
     args = parser.parse_args()
     stocktwits_itos_file_path = args.stocktwits_itos_file_path
