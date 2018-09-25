@@ -63,19 +63,95 @@ def update_impact_in_db(posts_to_update: List[Tuple[int, float]], use_ssh, db_ho
 def insert_current_global_sentiment_in_db(use_ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password):
     sql_for_insert_stocktwits = """
         INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
-        (SELECT 'stocktwits', 12*3600, UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id) 
+        (SELECT 'stocktwits', 12*3600, UNIX_TIMESTAMP(NOW())*1000, AVG(impact*(sentiment_mixed-0.5))
         FROM analysis_posts_sentiment 
         WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(12*3600*1000)) AND post_type IN ('stocktwit'));       
     """
 
     sql_for_insert_twitter = """
         INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
-        (SELECT 'twitter', 12*3600, UNIX_TIMESTAMP(NOW())*1000, SUM(impact*(sentiment_mixed-0.5))/COUNT(post_id)
+        (SELECT 'twitter', 12*3600, UNIX_TIMESTAMP(NOW())*1000, AVG(impact*(sentiment_mixed-0.5))
         FROM analysis_posts_sentiment
         WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(12*3600*1000)) AND post_type IN ('twitter-topic', 'twitter-user'));
     """
 
-    sql_for_insert = [sql_for_insert_stocktwits, sql_for_insert_twitter]
+    sql_for_insert_social_teslamonitor = """
+        INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
+        (
+            SELECT 'social_teslamonitor', sentiment_seconds_back, UNIX_TIMESTAMP(NOW())*1000, 
+            100*AVG(0.5+sentiment_absolute)
+            FROM analysis_global_sentiment
+            WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(sentiment_seconds_back*1000))
+            AND sentiment_type IN ('twitter', 'stocktwits')
+            GROUP BY sentiment_seconds_back
+        );
+    """
+
+    # Stocktweets ranges between 0 and 100.
+    # Stockfluence ranges between 0 and 200.
+
+    sql_for_insert_social_external_ensemble = """
+        INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
+        (
+            SELECT 'social_external_ensemble', 3*24*3600, UNIX_TIMESTAMP(NOW())*1000, 
+            AVG(sentiment_absolute)
+            FROM 
+            (
+            
+                SELECT client_received_ts_ms, sentiment_percent as sentiment_absolute
+                FROM data_stocktwits_sentiment_rt
+                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*24*3600*1000))
+                
+                UNION
+                
+                SELECT client_received_ts_ms, 0.5*sentiment_score as sentiment_absolute
+                FROM data_stockfluence_rt_sentiment
+                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*24*3600*1000))                
+            
+            ) AS sentiment_ensemble
+            
+        );
+    """
+
+    sql_for_insert_news_external_ensemble = """
+        INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
+        (
+            SELECT 'news_external_ensemble', 3*24*3600, UNIX_TIMESTAMP(NOW())*1000, 
+            AVG(sentiment_absolute)
+            FROM 
+            (
+
+                SELECT client_received_ts_ms, news_sentiment_score as sentiment_absolute
+                FROM data_benzinga_sentiment_rt
+                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*24*3600*1000))
+
+                UNION
+
+                SELECT client_received_ts_ms, current_buzz as sentiment_absolute
+                FROM data_tipranks_news_sentiment_rt
+                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*24*3600*1000))                
+
+            ) AS sentiment_ensemble
+
+        );
+    """
+
+    sql_for_insert_global_external_ensemble = """
+        INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
+        (
+            SELECT 'global_external_ensemble', 12*3600, UNIX_TIMESTAMP(NOW())*1000, 
+            AVG(sentiment_absolute)
+            FROM analysis_global_sentiment
+            WHERE created_at_epoch_ms >= (SELECT UNIX_TIMESTAMP(NOW())*1000-(12*3600*1000))
+            AND sentiment_type in ('news_external_ensemble', 'social_external_ensemble')
+        );
+    """
+
+    sql_for_insert = [
+        sql_for_insert_stocktwits, sql_for_insert_twitter, sql_for_insert_social_teslamonitor,
+        sql_for_insert_social_external_ensemble, sql_for_insert_news_external_ensemble,
+        sql_for_insert_global_external_ensemble
+    ]
 
     logger.info(f'Running inserts: {sql_for_insert}')
 
