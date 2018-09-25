@@ -35,26 +35,29 @@ def filter_input(input_data_file_path, batch_size, sleep_ms, processed_posts):
         posts_to_inspect = {}
         # print(input_msgs)
         for record in input_msgs:
-            msg_type = record['msgType']
+            try:
+                msg_type = record['msgType']
 
-            if msg_type in ['stocktwit', 'twitter-topic', 'twitter-user']:  # We'll keep  out for the time being.
-                # logger.info(f'Detected {record["msgType"]} msg')
-                if msg_type in ['twitter-topic', 'twitter-user']:
-                    text = str(record['data']['text']).lower()
+                if msg_type in ['stocktwit', 'twitter-topic', 'twitter-user']:  # We'll keep  out for the time being.
+                    # logger.info(f'Detected {record["msgType"]} msg')
+                    if msg_type in ['twitter-topic', 'twitter-user']:
+                        text = str(record['data']['text']).lower()
 
-                    # We only target certain topics for the time being.
-                    if not any(topic in text for topic in ['elon musk', 'tesla', 'tsla', 'tslaq', 'elonmusk', 'model 3']):
-                        continue
+                        # We only target certain topics for the time being.
+                        if not any(topic in text for topic in ['elon musk', 'tesla', 'tsla', 'tslaq', 'elonmusk', 'model 3']):
+                            continue
 
-                    if text[0:3] == 'rt ':
-                        continue
+                        if text[0:3] == 'rt ':
+                            continue
 
-                # TODO: Generalise to extract fields for other message types
-                key = (record['msgType'][:7], record['data']['id'])
+                    # TODO: Generalise to extract fields for other message types
+                    key = (record['msgType'][:7], record['data']['id'])
 
-                if key not in processed_posts:
-                    processed_posts.add(key)
-                    posts_to_inspect[key] = record
+                    if key not in processed_posts:
+                        processed_posts.add(key)
+                        posts_to_inspect[key] = record
+            except:
+                logger.error(f'Exception when processing record {record}: {traceback.format_exc()}')
 
         if len(posts_to_inspect) > 0:
             logger.info(f'Consuming {len(posts_to_inspect)} records for review, filtering and transformation')

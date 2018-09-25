@@ -35,17 +35,21 @@ def read_json_input(batch_size, input_handle, sleep_ms):
         n_lines = 0
         msgs = []
 
-        for json_msg in read_line():
-            msgs.append(json_msg)
-            n_lines += 1
+        try:
+            for json_msg in read_line():
+                msgs.append(json_msg)
+                n_lines += 1
 
-            if n_lines == batch_size:
+                if n_lines == batch_size:
+                    yield msgs.copy()
+                    n_lines = 0
+                    msgs = []
+
+            if n_lines > 0:
                 yield msgs.copy()
-                n_lines = 0
-                msgs = []
+        except:
+            logger.error(f'Exception when processing processing lines: {traceback.format_exc()}')
 
-        if n_lines > 0:
-            yield msgs.copy()
 
         # If nothing new in the file, we sleep
         logger.info(f'read_json_input loop: Going to sleep for {sleep_ms} milliseconds.')
