@@ -93,20 +93,20 @@ def insert_current_global_sentiment_in_db(use_ssh, db_host, db_user, db_password
     sql_for_insert_social_external_ensemble = """
         INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
         (
-            SELECT 'social_external_ensemble', 3*24*3600, UNIX_TIMESTAMP(NOW())*1000, 
+            SELECT 'social_external_ensemble', 1*24*3600, UNIX_TIMESTAMP(NOW())*1000, 
             AVG(sentiment_absolute)
             FROM 
             (
             
                 SELECT client_received_ts_ms, sentiment_percent as sentiment_absolute
                 FROM data_stocktwits_sentiment_rt
-                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*24*3600*1000))
+                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*24*3600*1000))
                 
                 UNION
                 
                 SELECT client_received_ts_ms, 0.5*sentiment_score as sentiment_absolute
                 FROM data_stockfluence_rt_sentiment
-                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*24*3600*1000))                
+                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*24*3600*1000))                
             
             ) AS sentiment_ensemble
             
@@ -116,20 +116,20 @@ def insert_current_global_sentiment_in_db(use_ssh, db_host, db_user, db_password
     sql_for_insert_news_external_ensemble = """
         INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
         (
-            SELECT 'news_external_ensemble', 3*24*3600, UNIX_TIMESTAMP(NOW())*1000, 
+            SELECT 'news_external_ensemble', 1*24*3600, UNIX_TIMESTAMP(NOW())*1000, 
             AVG(sentiment_absolute)
             FROM 
             (
 
                 SELECT client_received_ts_ms, news_sentiment_score as sentiment_absolute
                 FROM data_benzinga_sentiment_rt
-                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*24*3600*1000))
+                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*24*3600*1000))
 
                 UNION
 
                 SELECT client_received_ts_ms, current_buzz as sentiment_absolute
                 FROM data_tipranks_news_sentiment_rt
-                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(3*24*3600*1000))                
+                WHERE client_received_ts_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(1*24*3600*1000))                
 
             ) AS sentiment_ensemble
 
