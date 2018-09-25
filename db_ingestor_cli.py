@@ -7,6 +7,7 @@ import os
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 import sys
+import time
 from typing import Dict, Iterable, List, Tuple
 sys.excepthook = sys.__excepthook__ # See https://groups.io/g/insync/topic/13778827?p=,,,20,0,0,0::recentpostdate%2Fsticky,,,20,2,0,13778827
 
@@ -165,6 +166,8 @@ if __name__ == '__main__':
         del input_msgs
         del session
         gc.collect()
+        logger.info(f'Main loop: Going to sleep for {sleep_ms} milliseconds.')
+        time.sleep(sleep_ms / 1000)
 
     if ssh:
         ssh_server.stop()
