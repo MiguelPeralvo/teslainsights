@@ -79,7 +79,7 @@ def insert_current_global_sentiment_in_db(use_ssh, db_host, db_user, db_password
         INSERT INTO analysis_global_sentiment(sentiment_type, sentiment_seconds_back, created_at_epoch_ms, sentiment_absolute)
         (
             SELECT 'social_teslamonitor', sentiment_seconds_back, UNIX_TIMESTAMP(NOW())*1000, 
-            100*AVG(0.5+sentiment_absolute)
+            50*AVG(0.5+sentiment_absolute)
             FROM analysis_global_sentiment
             WHERE created_at_epoch_ms >=(SELECT UNIX_TIMESTAMP(NOW())*1000-(sentiment_seconds_back*1000))
             AND sentiment_type IN ('twitter', 'stocktwits')
