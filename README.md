@@ -1,4 +1,4 @@
-# TESLAMONITOR
+# TESLAINSIGHTS
 The purpose of this project is to keep track and capture insights, in real time, of the most relevant events around Tesla. 
 
 For the past months, I have been working on collecting stock price events, social media events, momentum events, ... in real time, to be able to initiate this stage of the project. 
