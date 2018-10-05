@@ -233,6 +233,7 @@ if __name__ == '__main__':
             df_relevant_posts = get_relevant_posts(ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
             # print(df_relevant_posts)
             relevant_posts = df_relevant_posts.to_dict('records')
+            logger.info(f'Relevant posts: {len(relevant_posts)}')
             posts_to_update = []
 
             for relevant_post in relevant_posts:
@@ -246,8 +247,11 @@ if __name__ == '__main__':
                     posts_to_update.append((current_id, compute_impact(relevant_post), relevant_post['post_type']))
 
             # Even if the post doesn't change, we may want to recalculate the impact every several seconds
+            delta_since_last_recalculation_ms = get_utc_now() - last_impact_recalculation_epoch_ms
+            logger.info(f'Posts to update: {len(posts_to_update)}. Milisecs since last recalculation: {delta_since_last_recalculation_ms}')
 
-            if len(posts_to_update) > 0 or (last_impact_recalculation_epoch_ms - get_utc_now()) > impact_recalculation_ms:
+            if len(posts_to_update) > 0 or delta_since_last_recalculation_ms > impact_recalculation_ms:
+                logger.info(f'Recalculating impact/sentiment')
                 update_impact_in_db(posts_to_update, ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
                 insert_current_global_sentiment_in_db(ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
                 last_impact_recalculation_epoch_ms = get_utc_now()
