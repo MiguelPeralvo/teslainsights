@@ -247,7 +247,7 @@ if __name__ == '__main__':
 
             # Even if the post doesn't change, we may want to recalculate the impact every several seconds
 
-            if len(posts_to_update) > 0 or (last_impact_recalculation_epoch_ms - get_utc_now()) > last_impact_recalculation_epoch_ms:
+            if len(posts_to_update) > 0 or (last_impact_recalculation_epoch_ms - get_utc_now()) > impact_recalculation_ms:
                 update_impact_in_db(posts_to_update, ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
                 insert_current_global_sentiment_in_db(ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
                 last_impact_recalculation_epoch_ms = get_utc_now()
