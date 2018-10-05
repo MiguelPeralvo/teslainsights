@@ -1,5 +1,6 @@
 import argparse
 import gc
+from datetime import datetime
 from inference import message_utils
 from inference import db_utils
 from lru import LRU
@@ -172,6 +173,12 @@ def compute_impact(post):
         return 1 + post.get('likes_total', 0) + post.get('interaction_total', 0)
 
 
+def get_utc_now():
+    delta_ts = datetime.utcnow() - datetime(1970, 1, 1)
+    utc_now = int((delta_ts.days * 24 * 60 * 60 + delta_ts.seconds) * 1000 + delta_ts.microseconds / 1000.0)
+    return utc_now
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-bs', '--batch_size', help='Number of records per read, between commits.', type=int, default=5)
@@ -181,6 +188,10 @@ if __name__ == '__main__':
         type=str, required=False
     )
     parser.add_argument('-s', '--sleep_ms', help='Sleep in millisecs', type=int, default=50)
+    parser.add_argument(
+        '-ir', '--impact_recalculation_ms',
+        help='How many millisecs since the last impact recalculation before triggering a new one', type=int, default=30000
+    )
     parser.add_argument('-ssh', '--ssh', help='Use ssh', action='store_true', required=False)
 
     args = parser.parse_args()
@@ -188,6 +199,7 @@ if __name__ == '__main__':
     database_name = str(args.database_name)
     sleep_ms = int(args.sleep_ms)
     input_data_file_path = args.input_data_file_path
+    impact_recalculation_ms = args.impact_recalculation_ms
     ssh = args.ssh  # True
     # db = 'automlpredictor_db_dashboard'
     db_host = os.getenv('AUTOMLPREDICTOR_DB_SERVER_IP', '127.0.0.1')
@@ -207,6 +219,7 @@ if __name__ == '__main__':
     Base = automap_base()
     engine, ssh_server = db_utils.reconnect_db(ssh, db_host, database_name, db_user, db_password, db_port, ssh_username, ssh_password, 'utf8mb4')
     Base.prepare(engine, reflect=True)
+    last_impact_recalculation_epoch_ms = get_utc_now()
 
     for input_msgs in message_utils.read_json_input(batch_size, input_handle, sleep_ms):
         # try:
@@ -232,9 +245,12 @@ if __name__ == '__main__':
                     processed_posts[current_id] = relevant_post
                     posts_to_update.append((current_id, compute_impact(relevant_post), relevant_post['post_type']))
 
-            if len(posts_to_update) > 0:
+            # Even if the post doesn't change, we may want to recalculate the impact every several seconds
+
+            if len(posts_to_update) > 0 or (last_impact_recalculation_epoch_ms - get_utc_now()) > last_impact_recalculation_epoch_ms:
                 update_impact_in_db(posts_to_update, ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
                 insert_current_global_sentiment_in_db(ssh, db_host, db_user, db_password, db_port, database_name, ssh_username, ssh_password)
+                last_impact_recalculation_epoch_ms = get_utc_now()
 
         except:
             logger.error(f'An error occurred while managing session {session}: {traceback.format_exc()}')
